@@ -3,6 +3,12 @@ MAKEOPTS=-j8
 run: minimal.iso
 	kvm -serial stdio -cdrom minimal.iso -m 4096
 
+init:
+	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
+	tar -xf linux-5.15.7.tar.gz
+	mv linux-5.15.7 linux-src
+	cd linux-src && make mrproper defconfig
+
 rootfs/init:
 	$(MAKE) $(MAKEOPTS) -C init
 	cp init/init rootfs
