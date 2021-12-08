@@ -19,7 +19,7 @@ linux-src:
 	cd linux-src && make mrproper defconfig
 
 clean:
-	rm -rf tmp rootfs minimal.iso
+	rm -rf tmp rootfs/init minimal.iso
 	make -C init clean
 
 rootfs/init: rootfs
