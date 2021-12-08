@@ -3,24 +3,33 @@ MAKEOPTS=-j8
 run: minimal.iso
 	kvm -serial stdio -cdrom minimal.iso -m 4096
 
-init:
+rootfs:
+	mkdir rootfs
+
+tmp: 
+	mkdir tmp
+
+init: tmp rootfs
 	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
 	tar -xf linux-5.15.7.tar.gz
 	mv linux-5.15.7 linux-src
 	cd linux-src && make mrproper defconfig
-	mkdir tmp rootfs
 
-rootfs/init:
-	$(MAKE) $(MAKEOPTS) -C init
+clean:
+	rm -rf tmp rootfs minimal.iso
+	make -C init clean
+
+rootfs/init: rootfs
+	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs
 
-tmp/rootfs.gz: rootfs/init
+tmp/rootfs.gz: rootfs/init tmp
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../tmp/rootfs.gz
 
 linux-src/arch/x86/boot/bzImage:
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
 
-tmp/kernel.gz: linux-src/arch/x86/boot/bzImage
+tmp/kernel.gz: linux-src/arch/x86/boot/bzImage tmp
 	cp linux-src/arch/x86/boot/bzImage tmp/kernel.gz
 
 .PHONY: syslinux
