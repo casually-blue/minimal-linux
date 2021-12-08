@@ -8,8 +8,8 @@ run: minimal.iso
 rootfs:
 	mkdir rootfs
 
-tmp: 
-	mkdir tmp
+isodir: 
+	mkdir isodir
 
 linux-src:
 	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
@@ -19,27 +19,29 @@ linux-src:
 	cd linux-src && make mrproper defconfig
 
 clean:
-	rm -rf tmp rootfs/init minimal.iso
+	rm -rf isodir rootfs/init minimal.iso
 	make -C init clean
 
 rootfs/init: rootfs
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs
 
-tmp/rootfs.gz: rootfs/init tmp
-	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../tmp/rootfs.gz
+isodir/rootfs.gz: rootfs/init isodir
+	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
 
 linux-src/arch/x86/boot/bzImage: linux-src
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
 
-tmp/kernel.gz: linux-src/arch/x86/boot/bzImage tmp
-	cp linux-src/arch/x86/boot/bzImage tmp/kernel.gz
+isodir/kernel.gz: linux-src/arch/x86/boot/bzImage isodir
+	cp linux-src/arch/x86/boot/bzImage isodir/kernel.gz
 
-.PHONY: syslinux
-syslinux:
-	cp syslinux/* tmp
+SYSLINUX_FILES=$(wildcard syslinux/*)
+TMP_SYS=$(patsubst syslinux/%,isodir/%,$(SYSLINUX_FILES))
 
-minimal.iso: tmp/rootfs.gz tmp/kernel.gz syslinux
+isodir/%: syslinux/%
+	cp $^ $@
+
+minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(TMP_SYS)
 	xorriso \
 		-as mkisofs \
 		-o minimal.iso \
@@ -48,5 +50,5 @@ minimal.iso: tmp/rootfs.gz tmp/kernel.gz syslinux
 		-no-emul-boot \
 		-boot-load-size 4 \
 		-boot-info-table \
-		./tmp
+		./isodir
 
