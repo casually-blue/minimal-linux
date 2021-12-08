@@ -8,6 +8,7 @@ init:
 	tar -xf linux-5.15.7.tar.gz
 	mv linux-5.15.7 linux-src
 	cd linux-src && make mrproper defconfig
+	mkdir tmp rootfs
 
 rootfs/init:
 	$(MAKE) $(MAKEOPTS) -C init
