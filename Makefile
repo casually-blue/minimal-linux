@@ -9,10 +9,11 @@ rootfs:
 tmp: 
 	mkdir tmp
 
-init: tmp rootfs
+init:
 	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
 	tar -xf linux-5.15.7.tar.gz
 	mv linux-5.15.7 linux-src
+	rm linux-5.15.7.tar.gz
 	cd linux-src && make mrproper defconfig
 
 clean:
