@@ -1,5 +1,7 @@
 MAKEOPTS=-j8
 
+all: minimal.iso
+
 run: minimal.iso
 	kvm -serial stdio -cdrom minimal.iso -m 4096
 
@@ -9,7 +11,7 @@ rootfs:
 tmp: 
 	mkdir tmp
 
-init:
+linux-src:
 	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
 	tar -xf linux-5.15.7.tar.gz
 	mv linux-5.15.7 linux-src
@@ -27,7 +29,7 @@ rootfs/init: rootfs
 tmp/rootfs.gz: rootfs/init tmp
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../tmp/rootfs.gz
 
-linux-src/arch/x86/boot/bzImage:
+linux-src/arch/x86/boot/bzImage: linux-src
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
 
 tmp/kernel.gz: linux-src/arch/x86/boot/bzImage tmp
