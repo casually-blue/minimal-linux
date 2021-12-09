@@ -22,7 +22,7 @@ clean:
 	rm -rf isodir rootfs/init minimal.iso
 	make -C init clean
 
-rootfs/init: rootfs
+rootfs/init: rootfs init/init
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs
 
