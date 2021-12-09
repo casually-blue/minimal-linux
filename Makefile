@@ -22,7 +22,8 @@ clean:
 	rm -rf isodir rootfs/init minimal.iso
 	make -C init clean
 
-rootfs/init: rootfs init/init
+.PHONY=rootfs/init
+rootfs/init: rootfs
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs
 
