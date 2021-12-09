@@ -22,12 +22,14 @@ clean:
 	rm -rf isodir rootfs/init minimal.iso
 	make -C init clean
 
-.PHONY=rootfs/init
-rootfs/init: rootfs
+ROOTFS_FILES=$(shell find rootfs)
+
+.PHONY=init
+rootfs/init: rootfs init
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs
 
-isodir/rootfs.gz: rootfs/init isodir
+isodir/rootfs.gz: rootfs/init isodir $(ROOTFS_FILES)
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
 
 linux-src/arch/x86/boot/bzImage: linux-src
