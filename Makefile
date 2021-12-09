@@ -11,11 +11,12 @@ rootfs:
 isodir: 
 	mkdir isodir
 
+LINUX_VERSION=5.15.7
 linux-src:
-	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.7.tar.gz
-	tar -xf linux-5.15.7.tar.gz
-	mv linux-5.15.7 linux-src
-	rm linux-5.15.7.tar.gz
+	wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-$(LINUX_VERSION).tar.gz
+	tar -xf linux-$(LINUX_VERSION).tar.gz
+	mv linux-$(LINUX_VERSION) linux-src
+	rm linux-$(LINUX_VERSION).tar.gz
 	cd linux-src && make mrproper defconfig
 
 clean:
