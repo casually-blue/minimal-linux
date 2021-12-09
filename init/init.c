@@ -1,6 +1,7 @@
 #include<unistd.h>
 #include<sys/mount.h>
 #include<sys/syscall.h>
+#include<sys/reboot.h>
 #include<fcntl.h>
 #include<string.h>
 
@@ -28,11 +29,11 @@ int main(int argc, char** argv) {
                 execl("/bin/ion", "ion", NULL);
         } else {
                 write(0, "launched process\n", 17);
+
+                wait(pid);
+                reboot(RB_POWER_OFF);
         }
 
-        while(1) {
-
-        }
 
         return 0;
 }
