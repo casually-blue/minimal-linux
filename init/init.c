@@ -11,6 +11,10 @@ int main(int argc, char** argv) {
 
         int pid = fork();
         if(pid == 0) {
+                int spid = setsid();
+                setpgid(0, spid);
+                ioctl(0, TIOCSCTTY, 1);
+
                 close(0);
                 int fd = open("/dev/tty0", O_RDWR | O_NONBLOCK, 0);
                 dup2(STDIN_FILENO, STDOUT_FILENO);
