@@ -1,0 +1,4 @@
+[submodule "rootfs"]
+	path = rootfs
+	url = git@github.com:casually-blue/minimal-rootfs.git
+	branch = main
