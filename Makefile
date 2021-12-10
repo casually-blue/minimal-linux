@@ -29,12 +29,15 @@ clean:
 
 ROOTFS_FILES=$(shell find rootfs)
 
-.PHONY=init
-rootfs/init: rootfs init
-	$(MAKE) $(MAKEOPTS) -C init 
-	cp init/init rootfs
+rootfs/sbin: rootfs
+	mkdir -p rootfs/sbin
 
-isodir/rootfs.gz: rootfs/init isodir $(ROOTFS_FILES)
+.PHONY=init
+rootfs/sbin/init: rootfs/sbin init
+	$(MAKE) $(MAKEOPTS) -C init 
+	cp init/init rootfs/sbin
+
+isodir/rootfs.gz: rootfs/sbin/init isodir $(ROOTFS_FILES)
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
 
 linux-src/arch/x86/boot/bzImage: linux-src
@@ -43,20 +46,16 @@ linux-src/arch/x86/boot/bzImage: linux-src
 isodir/kernel.gz: linux-src/arch/x86/boot/bzImage isodir
 	cp linux-src/arch/x86/boot/bzImage isodir/kernel.gz
 
-SYSLINUX_FILES=$(wildcard syslinux/*)
-TMP_SYS=$(patsubst syslinux/%,isodir/%,$(SYSLINUX_FILES))
+GRUB_FILES=$(shell find grub)
+ISO_GRUB_FILES=$(patsubst %,isodir/boot/%, $(GRUB_FILES))
 
-isodir/%: syslinux/%
-	cp $^ $@
+isodir/boot/%: %
+	mkdir -p isodir/boot
+	cp -ar $^ $@
 
-minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(TMP_SYS)
-	xorriso \
-		-as mkisofs \
-		-o minimal.iso \
-		-b isolinux.bin \
-		-c boot.cat \
-		-no-emul-boot \
-		-boot-load-size 4 \
-		-boot-info-table \
-		./isodir
+
+
+minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(ISO_GRUB_FILES)
+	rm -f minimal.iso
+	grub-mkrescue -o minimal.iso isodir
 
