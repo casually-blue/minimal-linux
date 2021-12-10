@@ -3,7 +3,10 @@
 #include<sys/syscall.h>
 #include<sys/reboot.h>
 #include<sys/wait.h>
+#include<dirent.h>
+#include<errno.h>
 #include<fcntl.h>
+#include<sys/stat.h>
 
 int assign_tty(char* tty) {
         close(0);
@@ -24,14 +27,25 @@ void setup_gid() {
         ioctl(0, TIOCSCTTY, 1);
 }
 
-int main(int argc, char** argv) {
+void system_fs() {
         mount("-", "/dev", "devtmpfs", 0, NULL);        
         mount("-", "/proc", "proc", 0, NULL);
-        mount("-", "/sys", "sys", 0, NULL);
-        mount("/dev/sda", "/rootfs", "btrfs", 0, NULL);
+        mount("-", "/sys", "sysfs", 0, NULL);
+}
 
-        syscall(SYS_pivot_root, "/rootfs", "/mnt");
+void fstab() {
+        system_fs();
+        mkdir("/newroot", O_RDWR); 
+        mount("/dev/sda", "/newroot", "btrfs", 0, NULL);
+}
+
+int main(int argc, char** argv) {
+        fstab();
+        chroot("/newroot");
         chdir("/");
+        system_fs();
+
+        setenv("HOME", "/root");
 
 
         int pid;
@@ -41,8 +55,6 @@ int main(int argc, char** argv) {
 
                 execl("/bin/ion", "ion", NULL);
         } else {
-                write(0, "launched process\n", 17);
-
                 wait(&pid);
                 reboot(RB_POWER_OFF);
         }
