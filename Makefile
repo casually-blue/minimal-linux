@@ -3,7 +3,7 @@ MAKEOPTS=-j8
 all: minimal.iso
 
 run: minimal.iso
-	kvm -serial stdio -cdrom minimal.iso -m 4096
+	kvm -serial stdio -cdrom minimal.iso -m 4096 -hda root.img
 
 rootfs:
 	mkdir rootfs

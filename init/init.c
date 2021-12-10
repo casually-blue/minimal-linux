@@ -26,6 +26,12 @@ void setup_gid() {
 
 int main(int argc, char** argv) {
         mount("-", "/dev", "devtmpfs", 0, NULL);        
+        mount("-", "/proc", "proc", 0, NULL);
+        mount("-", "/sys", "sys", 0, NULL);
+        mount("/dev/sda", "/rootfs", "btrfs", 0, NULL);
+
+        syscall(SYS_pivot_root, "/rootfs", "/mnt");
+        chdir("/");
 
 
         int pid;
