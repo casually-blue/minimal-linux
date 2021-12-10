@@ -29,18 +29,17 @@ clean:
 
 ROOTFS_FILES=$(shell find rootfs)
 
-rootfs/sbin: rootfs
+rootfs/sbin:
 	mkdir -p rootfs/sbin
 
-.PHONY=init
-rootfs/sbin/init: rootfs/sbin init
+rootfs/sbin/init: rootfs/sbin
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs/sbin
 
 isodir/rootfs.gz: rootfs/sbin/init isodir $(ROOTFS_FILES)
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
 
-linux-src/arch/x86/boot/bzImage: linux-src
+linux-src/arch/x86/boot/bzImage:
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
 
 isodir/kernel.gz: linux-src/arch/x86/boot/bzImage isodir
@@ -49,9 +48,11 @@ isodir/kernel.gz: linux-src/arch/x86/boot/bzImage isodir
 GRUB_FILES=$(shell find grub)
 ISO_GRUB_FILES=$(patsubst %,isodir/boot/%, $(GRUB_FILES))
 
-isodir/boot/%: %
+isodir/boot:
 	mkdir -p isodir/boot
-	cp -ar $^ $@
+
+isodir/boot/%: % isodir/boot
+	cp -ar $< $@
 
 
 
