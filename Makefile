@@ -57,8 +57,6 @@ isodir/boot:
 isodir/boot/%: % isodir/boot
 	cp -ar $< $@
 
-
-
 minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(ISO_GRUB_FILES)
 	rm -f minimal.iso
 	grub-mkrescue -o minimal.iso isodir
