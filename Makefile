@@ -29,10 +29,13 @@ clean:
 
 ROOTFS_FILES=$(shell find rootfs)
 
+init/init:
+	make -C init
+
 rootfs/sbin:
 	mkdir -p rootfs/sbin
 
-rootfs/sbin/init: rootfs/sbin
+rootfs/sbin/init: rootfs/sbin init/init.c
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs/sbin
 
