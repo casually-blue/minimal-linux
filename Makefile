@@ -3,7 +3,7 @@ MAKEOPTS=-j8
 all: minimal.iso
 
 run: minimal.iso
-	kvm -serial stdio -cdrom minimal.iso -m 4096 -hda root.img
+	kvm -serial stdio -cdrom minimal.iso -m 4096 -hda root.img -boot d
 
 rootfs:
 	mkdir rootfs
@@ -35,9 +35,12 @@ init/init:
 rootfs/sbin:
 	mkdir -p rootfs/sbin
 
-rootfs/sbin/init: rootfs/sbin init/init.c
+rootfs/sbin/init: rootfs/sbin init/init.c init/init
+	mount root || /bin/true
 	$(MAKE) $(MAKEOPTS) -C init 
 	cp init/init rootfs/sbin
+	cp init/init root/sbin
+	umount root
 
 isodir/rootfs.gz: rootfs/sbin/init isodir $(ROOTFS_FILES)
 	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
@@ -54,7 +57,7 @@ ISO_GRUB_FILES=$(patsubst %,isodir/boot/%, $(GRUB_FILES))
 isodir/boot:
 	mkdir -p isodir/boot
 
-isodir/boot/%: % isodir/boot
+isodir/boot/%: %
 	cp -ar $< $@
 
 minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(ISO_GRUB_FILES)
