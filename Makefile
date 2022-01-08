@@ -5,9 +5,6 @@ all: minimal.iso
 run: minimal.iso
 	kvm -serial stdio -cdrom minimal.iso -m 4096 -hda root.img -boot d
 
-rootfs:
-	mkdir rootfs
-
 isodir: 
 	mkdir isodir
 
@@ -24,26 +21,19 @@ linux-src:
 	cd linux-src && make mrproper defconfig
 
 clean:
-	rm -rf isodir rootfs/init minimal.iso
+	rm -rf isodir minimal.iso
 	make -C init clean
 
-ROOTFS_FILES=$(shell find rootfs)
-
+.PHONY: init/init
 init/init:
 	make -C init
 
-rootfs/sbin:
-	mkdir -p rootfs/sbin
-
-rootfs/sbin/init: rootfs/sbin init/init.c init/init
+.PHONY: root/sbin/init
+root/sbin/init: init/init
 	mount root || /bin/true
 	$(MAKE) $(MAKEOPTS) -C init 
-	cp init/init rootfs/sbin
 	cp init/init root/sbin
 	umount root
-
-isodir/rootfs.gz: rootfs/sbin/init isodir $(ROOTFS_FILES)
-	cd rootfs && find . | cpio -R root:root -H newc -o | gzip > ../isodir/rootfs.gz
 
 linux-src/arch/x86/boot/bzImage:
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
@@ -51,16 +41,11 @@ linux-src/arch/x86/boot/bzImage:
 isodir/kernel.gz: linux-src/arch/x86/boot/bzImage isodir
 	cp linux-src/arch/x86/boot/bzImage isodir/kernel.gz
 
-GRUB_FILES=$(shell find grub)
-ISO_GRUB_FILES=$(patsubst %,isodir/boot/%, $(GRUB_FILES))
+isodir/boot/grub/grub.cfg:
+	mkdir -p isodir/boot/grub
+	cp grub/grub.cfg isodir/boot/grub/grub.cfg
 
-isodir/boot:
-	mkdir -p isodir/boot
-
-isodir/boot/%: %
-	cp -ar $< $@
-
-minimal.iso: isodir/rootfs.gz isodir/kernel.gz $(ISO_GRUB_FILES)
+minimal.iso: isodir/kernel.gz isodir/boot/grub/grub.cfg root/sbin/init
 	rm -f minimal.iso
 	grub-mkrescue -o minimal.iso isodir
 

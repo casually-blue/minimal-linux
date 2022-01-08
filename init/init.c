@@ -26,6 +26,7 @@ void setup_gid() {
 }
 
 int main(int argc, char** argv) {
+	mount("/dev/sda2", "/", "ext4", MS_REMOUNT | MS_RELATIME, NULL);
         chdir("/");
 
         mount("dev", "/dev", "devtmpfs", 0, NULL);
@@ -35,20 +36,16 @@ int main(int argc, char** argv) {
         setenv("HOME", "/root", 1);
 
 
-	mount("/dev/sda2", "/", "ext4", MS_REMOUNT | MS_RELATIME, NULL);
 
-	write(0, "mounting /dev/sda2\n", 20);
-	
         int pid;
         if((pid = fork()) == 0) {
                 setup_gid();
                 assign_tty("/dev/tty0");
 
-		write(0, "Terminal setup, executing shell\n", 32);
-
                 execl("/bin/ion", "ion", NULL);
         } else {
                 wait(&pid);
+
                 reboot(RB_POWER_OFF);
         }
 

@@ -1,6 +1,5 @@
-isodir
-linux-src
-minimal.iso
-root.img
-root
-rootfs
+*
+!grub/grub.cfg
+!init
+!libc
+!README.md
