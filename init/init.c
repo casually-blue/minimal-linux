@@ -42,7 +42,11 @@ int main(int argc, char** argv) {
                 setup_gid();
                 assign_tty("/dev/tty0");
 
-                execl("/bin/ion", "ion", NULL);
+                //execl("/bin/ion", "ion", NULL);
+		write(0, "Hello World\n", 12);
+		while(1){
+
+		}
         } else {
                 wait(&pid);
 
