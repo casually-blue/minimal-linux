@@ -1,5 +1,7 @@
 MAKEOPTS=-j8
 
+all: root.img
+
 run: root.img
 	kvm -serial stdio -m 4096 -hda root.img -boot c
 
@@ -22,6 +24,10 @@ clean:
 init/init: init/init.c
 	make -C init
 
+.PHONY: libc/libc.so
+libc/libc.so: 
+	make -C libc
+
 linux-src/arch/x86/boot/bzImage:
 	$(MAKE) $(MAKEOPTS) -C linux-src bzImage
 
@@ -39,8 +45,12 @@ unmountroot:
 	sudo losetup -d /dev/loop0
 
 init-install: init/init
-	mkdir -p mountpoints/root/sbin
+	sudo mkdir -p mountpoints/root/sbin
 	sudo cp init/init mountpoints/root/sbin/init
+
+libc-install: libc/libc.so
+	sudo mkdir -p mountpoints/root/lib
+	sudo cp libc/libc.so mountpoints/root/lib/
 
 setup-grub: mountroot
 	make grub-install
@@ -55,5 +65,6 @@ grub-config:
 root.img: mountroot
 	make grub-config
 	make init-install 
+	make libc-install
 	make unmountroot
 

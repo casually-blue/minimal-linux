@@ -2,4 +2,5 @@
 !grub/grub.cfg
 !init
 !libc
+!utils
 !README.md
